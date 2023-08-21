@@ -25,8 +25,8 @@ typedef struct{
 void initCPU(CPU* cpu);
 void cpuExecute(CPU* cpu);
 
-void cpuPush(CPU* cpu, uint8_t value);
-uint8_t cpuPop(CPU* cpu);
+void cpuPush(CPU* cpu, uint16_t value);
+uint16_t cpuPop(CPU* cpu);
 
 void parseOpcode(CPU* cpu, uint16_t opcode);
 
