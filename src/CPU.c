@@ -3,9 +3,27 @@
 //
 
 
-#include <sdoias.h>
-#include "include/CPU.h"
+#include "../include/CPU.h"
 
+uint8_t fontsetTest[80] =
+        {
+                0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+                0x20, 0x60, 0x20, 0x20, 0x70, // 1
+                0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+                0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+                0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+                0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+                0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+                0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+                0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+                0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+                0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+                0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+                0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+                0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+                0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+                0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+        };
 
 void initCPU(CPU *cpu) {
     cpu->PC = 0x0200;
@@ -13,12 +31,12 @@ void initCPU(CPU *cpu) {
     cpu->SP = 0x0;
     cpu->opcode = 0x0;
     cpu->SP = 0x00;
-}
 
-void cpuExecute(CPU *cpu) {
-    cpu->opcode = readMemoryWord(&cpu->memory, &cpu->PC);
-    cpu->PC++;
-    parseOpcode(cpu, cpu->opcode);
+    for(size_t i = 0; i < sizeof(fontsetTest); i++){
+        writeMemory(&cpu->memory, i, fontsetTest[i]);
+    }
+
+    int i = 0;
 }
 
 void cpuPush(CPU *cpu, uint16_t value) {
@@ -29,10 +47,16 @@ uint16_t cpuPop(CPU *cpu) {
     return cpu->stack[--cpu->SP];
 }
 
-void parseOpcode(CPU *cpu, uint16_t opcode) {
+void inline nextInstruction(CPU* cpu){
+    cpu->PC += 2;
+}
+
+void parseOpcode(CPU *cpu) {
+    uint8_t opcode = readMemory(&cpu->memory, cpu->PC);
     uint8_t x = (opcode & 0x0F00) >> 8;
     uint8_t y = (opcode & 0x0F00) >> 4;
 
+    uint8_t pixel;
     switch (opcode & 0xF000) {
         case 0x0000:
             if (opcode == 0x00E0) {
@@ -129,9 +153,24 @@ void parseOpcode(CPU *cpu, uint16_t opcode) {
             break;
         case 0xC000:
             cpu->V[opcode & 0x0F00];
+
             //TODO RANDOM
             break;
         case 0xD000:
+            cpu->V[0xF] = 0;
+            for(size_t yPos = 0; yPos < (opcode & 0x000F); yPos++){
+                pixel = readMemory(&cpu->memory, cpu->I + yPos);
+                for(size_t xPos = 7; xPos > 0; xPos--){
+                    if(pixel & 0x01 << xPos){
+                        if(cpu->pixelMap[x + xPos + ((y + yPos) * WIDTH)])
+                            cpu->V[0xF] = 1;
+                        else
+                            cpu->pixelMap[x + xPos + ((y + yPos) * WIDTH)] ^= 1;
+                    }
+                }
+            }
+            cpu->updateScreen = 0x01;
+            cpu->PC += 2;
             break;
         case 0xE000:
             break;
