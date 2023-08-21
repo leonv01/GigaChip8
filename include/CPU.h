@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include "Memory.h"
+#include <time.h>
 
 typedef struct{
     uint8_t V[16];
@@ -16,12 +17,17 @@ typedef struct{
     uint16_t SP;
     uint16_t stack[16];
 
-    uint8_t opcode;
+    uint16_t opcode;
 
     Memory memory;
 } CPU;
 
 void initCPU(CPU* cpu);
 void cpuExecute(CPU* cpu);
+
+void cpuPush(CPU* cpu, uint8_t value);
+uint8_t cpuPop(CPU* cpu);
+
+void parseOpcode(CPU* cpu, uint16_t opcode);
 
 #endif //GIGACHIP8_CPU_H
