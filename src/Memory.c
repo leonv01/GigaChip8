@@ -2,7 +2,7 @@
 // Created by leonv on 21/08/2023.
 //
 
-#include "include/Memory.h"
+#include "../include/Memory.h"
 
 void initMemory(Memory* memory){
 
