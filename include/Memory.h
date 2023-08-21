@@ -14,7 +14,11 @@ typedef struct{
 } Memory;
 
 void initMemory(Memory* memory);
+
 uint8_t readMemory(Memory* memory, uint16_t address);
 void writeMemory(Memory* memory, uint16_t address, uint8_t value);
+
+uint16_t readMemoryWord(Memory* memory, uint16_t* address);
+void writeMemoryWord(Memory* memory, uint16_t* address, uint16_t value);
 
 #endif //GIGACHIP8_MEMORY_H
